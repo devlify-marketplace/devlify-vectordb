@@ -35,8 +35,56 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  prepare-cpp-dependencies:
+    name: Prepare cached C++ dependencies
+    runs-on: ubuntu-22.04
+    # A cold graph exceeded the checker's three-hour budget before checks began.
+    # Finish and cache it independently, rather than dropping checks or losing
+    # all completed packages when the checker hits its job deadline.
+    timeout-minutes: 360
+    outputs:
+      conan-cache-key: ${{ steps.conan-cache.outputs.cache-primary-key }}
+    steps:
+      - name: Prepare shared Docker and build storage
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get clean
+          docker image prune --all --force
+          docker_root=$(docker info --format '{{.DockerRootDir}}')
+          df -h / "$GITHUB_WORKSPACE" "$docker_root"
+          available_kb=$(df -Pk "$docker_root" | awk 'NR == 2 {print $4}')
+          if (( available_kb < 50 * 1024 * 1024 )); then
+            echo "Less than 50 GiB available for Docker and build outputs" >&2
+            exit 1
+          fi
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Restore exact C++ dependency cache
+        id: conan-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: .docker/amd64-ubuntu22.04-conan2
+          # Image, recipes, settings, options and bootstrap code fingerprint the
+          # GCC 12 / C++20 / libstdc++11 / Conan 2.25.1 / Release package graph.
+          key: cppdeps-v1-linux-amd64-ubuntu22.04-gcc12-cxx20-libstdcxx11-conan2.25.1-Release-${{ hashFiles('.env', 'docker-compose.yml', 'build/docker/builder/**', 'build/builder.sh', 'build/util.sh', 'Makefile', 'internal/core/conanfile.*', 'scripts/3rdparty_build.sh', 'scripts/setenv.sh') }}
+      - name: Build and compact missing C++ dependencies
+        if: steps.conan-cache.outputs.cache-hit != 'true'
+        env:
+          OS_NAME: ubuntu22.04
+        run: |
+          ./build/builder.sh /bin/bash -c 'make mode=Release build-3rdparty && conan cache clean "*" --source --build --download --temp && chmod -R a+rX /home/milvus/.conan2'
+          du -sh .docker/amd64-ubuntu22.04-conan2
+      - name: Save completed C++ dependency cache
+        if: steps.conan-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .docker/amd64-ubuntu22.04-conan2
+          key: ${{ steps.conan-cache.outputs.cache-primary-key }}
+
   ubuntu:
     name: Code Checker AMD64 Ubuntu 22.04
+    needs: prepare-cpp-dependencies
     runs-on: ubuntu-22.04
     timeout-minutes: 180
     strategy:
@@ -64,11 +112,19 @@ jobs:
         uses: ./.github/actions/cache-restore
         with:
           os: 'ubuntu22.04'
+      - name: Isolate prepared Conan cache from legacy cache
+        run: rm -rf -- .docker/amd64-ubuntu22.04-conan2
+      - name: Restore prepared C++ dependencies
+        uses: actions/cache/restore@v4
+        with:
+          path: .docker/amd64-ubuntu22.04-conan2
+          key: ${{ needs.prepare-cpp-dependencies.outputs.conan-cache-key }}
+          fail-on-cache-miss: true
       - name: Code Check
         env:
           OS_NAME: 'ubuntu22.04'
         run: |
-          ./build/builder.sh /bin/bash -c "git config --global --add safe.directory /go/src/github.com/milvus-io/milvus && make check-proto-product && make verifiers"
+          ./build/builder.sh /bin/bash -c "git config --global --add safe.directory /go/src/github.com/milvus-io/milvus && make mode=Release check-proto-product verifiers"
       - name: Save Caches
         uses: ./.github/actions/cache-save
         if: github.event_name != 'pull_request'
