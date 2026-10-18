@@ -3,98 +3,102 @@ name: Update Knowhere Commit
 on:
   workflow_dispatch:
   schedule:
-    # * is a special character in YAML so you have to quote this string
-    #         ┌───────────── minute (0 - 59)
-    #         │ ┌───────────── hour (0 - 23)
-    #         │ │  ┌───────────── day of the month (1 - 31)
-    #         │ │  │ ┌───────────── month (1 - 12 or JAN-DEC)
-    #         │ │  │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
-    #         │ │  │ │ │
-    #         │ │  │ │ │
-    #         │ │  │ │ │
-    - cron:  '0 15 * * *'
+    - cron: '0 15 * * *'
 
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-knowhere-commit
+  cancel-in-progress: false
 
 jobs:
   update-knowhere-commits:
     name: update-knowhere-commit
     runs-on: ubuntu-latest
-    env:
-      OS_NAME: ubuntu20.04
-    timeout-minutes: 60
+    timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Install GitHub CLI
-        run: |
-          sudo apt update
-          sudo apt install -y gh
-      - name: Close Previous PRs
-        run: |
-          REPO=${{ github.repository }}
+        uses: actions/checkout@v4
 
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-
-          # Set up GitHub CLI authentication non-interactively
-          gh auth login --with-token <<< "${{ secrets.ALL_CONTRIBUTORS_TOKEN }}"
-            
-          BRANCH_PREFIX="update_knowhere_commit_"
-            
-          prs=$(gh pr list --repo "$REPO" --state open --json number,headRefName --jq ".[] | select(.headRefName | startswith(\"$BRANCH_PREFIX\")) | .number")
-            
-          for pr in $prs; do
-              echo "Closing old PR #$pr"
-              gh pr close $pr --repo "$REPO"
-          done
-        env:
-          GH_TOKEN: ${{ secrets.ALL_CONTRIBUTORS_TOKEN }}
-      - name: get knowhere latest commit
-        id: get-knowhere-latest-commit
-        run: | 
-          cd ..
-          rm -fr Knowhere
-          git clone https://github.com/zilliztech/Knowhere.git
-          cd Knowhere
-          export commit=$(git rev-parse --short HEAD)
-          echo $commit
-          echo "::set-output name=knowhere-commit::$commit"
-          cd ../milvus
-      - name: Update Commit Changes
-        continue-on-error: true
+      - name: Get Knowhere latest commit
+        id: knowhere
         shell: bash
         run: |
-          sed -i "0,/(\ KNOWHERE_VERSION/ s#( KNOWHERE_VERSION.*#( KNOWHERE_VERSION ${{ steps.get-knowhere-latest-commit.outputs.knowhere-commit }} )#g" internal/core/thirdparty/knowhere/CMakeLists.txt
-          head -n 17 internal/core/thirdparty/knowhere/CMakeLists.txt
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add internal/core/thirdparty/knowhere/CMakeLists.txt
-          git commit -m "Update knowhere commit"
-      - name: Create Pull Request
+          set -euo pipefail
+          commit=$(git ls-remote https://github.com/zilliztech/Knowhere.git refs/heads/main | awk '{print $1}')
+          if [[ ! "$commit" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "Could not resolve Knowhere main to a full commit SHA" >&2
+            exit 1
+          fi
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+
+      - name: Update commit pin
+        env:
+          KNOWHERE_COMMIT: ${{ steps.knowhere.outputs.commit }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import pathlib
+          import re
+
+          path = pathlib.Path('internal/core/thirdparty/knowhere/CMakeLists.txt')
+          text = path.read_text()
+          updated, count = re.subn(
+              r'(?m)^set\(\s*KNOWHERE_VERSION\s+[0-9a-fA-F]+\s*\)\s*$',
+              'set( KNOWHERE_VERSION ' + os.environ['KNOWHERE_COMMIT'] + ' )',
+              text,
+          )
+          if count != 1:
+              raise SystemExit(f'Expected exactly one Knowhere version pin, found {count}')
+          path.write_text(updated)
+          PY
+          git diff --check
+          git diff -- internal/core/thirdparty/knowhere/CMakeLists.txt
+
+      - name: Create or update pull request
         id: cpr
-        continue-on-error: true
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.ALL_CONTRIBUTORS_TOKEN }}
-          author: sre-ci-robot <sre-ci-robot@users.noreply.github.com>
+          # An optional PAT permits downstream CI; otherwise use the built-in token.
+          token: ${{ secrets.ALL_CONTRIBUTORS_TOKEN || github.token }}
+          commit-message: 'Update Knowhere commit'
           signoff: true
-          branch: update_knowhere_commit_${{ github.sha }}
+          branch: update_knowhere_commit
           delete-branch: true
+          add-paths: internal/core/thirdparty/knowhere/CMakeLists.txt
           title: '[automated] Update Knowhere Commit'
           body: |
-            Update Knowhere Commit
-            Signed-off-by: sre-ci-robot sre-ci-robot@users.noreply.github.com
-      - name: Check outputs
-        run: |
-          echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
-          echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
-      - name: Send Message To Feishu
+            Update Knowhere to `${{ steps.knowhere.outputs.commit }}` from upstream main.
+
+            Review and test compatibility before merging. When the built-in GitHub
+            token creates this PR, GitHub does not automatically trigger other workflows.
+
+      - name: Report result
         env:
-          ACTIONS_FEISHU_TAG: 'v1.3.1'
-          INPUT_WEBHOOK: "${{ secrets.FEISHU_WEBHOOK_KNOWHERE_COMMIT_BOT }}"
-          INPUT_MESSAGE_TYPE: text
-          INPUT_CONTENT: "Pr url by rebot: ${{ steps.cpr.outputs.pull-request-url }}"
+          PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
         run: |
-          wget -q https://github.com/xiachufang/actions-feishu/releases/download/${{ env.ACTIONS_FEISHU_TAG }}/linux-amd64-actions-feishu.tar.gz
-          tar zxf linux-amd64-actions-feishu.tar.gz feishu
-          ./feishu
+          if [ -n "$PR_URL" ]; then
+            echo "Pull request: $PR_URL" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Knowhere pin is already current; no pull request needed." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Notify Feishu when configured
+        if: steps.cpr.outputs.pull-request-url != ''
+        env:
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK_KNOWHERE_COMMIT_BOT }}
+          PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "$FEISHU_WEBHOOK" ]; then
+            echo "Feishu webhook is not configured; skipping notification."
+            exit 0
+          fi
+          payload=$(python3 -c 'import json, os; print(json.dumps({"msg_type": "text", "content": {"text": "Knowhere update PR: " + os.environ["PR_URL"]}}))')
+          curl --fail --silent --show-error --max-time 30 \
+            -H 'Content-Type: application/json' --data "$payload" "$FEISHU_WEBHOOK"
