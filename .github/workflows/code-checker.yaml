@@ -3,6 +3,7 @@ name: Code Checker
 
 # This workflow is triggered on pushes or pull request to the repository.
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
@@ -36,20 +37,27 @@ concurrency:
 jobs:
   ubuntu:
     name: Code Checker AMD64 Ubuntu 22.04
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 180
     strategy:
       fail-fast: false
     steps:
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        if: ${{ ! startsWith(runner.name, 'self') }} # skip this step if it is self-hosted runner
-        with:
-          root-reserve-mb: 20480
-          swap-size-mb: 1024
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
+      - name: Prepare shared Docker and build storage
+        if: ${{ ! startsWith(runner.name, 'self') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Keep the workspace and Docker on the same filesystem. The previous
+          # LVM setup filled / with loop images, leaving Docker unable to pull.
+          sudo apt-get clean
+          docker image prune --all --force
+          docker_root=$(docker info --format '{{.DockerRootDir}}')
+          df -h / "$GITHUB_WORKSPACE" "$docker_root"
+          available_kb=$(df -Pk "$docker_root" | awk 'NR == 2 {print $4}')
+          if (( available_kb < 50 * 1024 * 1024 )); then
+            echo "Less than 50 GiB available for Docker and build outputs" >&2
+            exit 1
+          fi
       - name: Checkout
         uses: actions/checkout@v2
       - name: Download Caches
@@ -71,18 +79,25 @@ jobs:
     if: ${{ false }} # skip for now
     name: Code Checker Amazonlinux 2023
     # Run in amazonlinux docker
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 180
     steps:
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        if: ${{ ! startsWith(runner.name, 'self') }} # skip this step if it is self-hosted runner
-        with:
-          root-reserve-mb: 20480
-          swap-size-mb: 1024
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
+      - name: Prepare shared Docker and build storage
+        if: ${{ ! startsWith(runner.name, 'self') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Keep the workspace and Docker on the same filesystem. The previous
+          # LVM setup filled / with loop images, leaving Docker unable to pull.
+          sudo apt-get clean
+          docker image prune --all --force
+          docker_root=$(docker info --format '{{.DockerRootDir}}')
+          df -h / "$GITHUB_WORKSPACE" "$docker_root"
+          available_kb=$(df -Pk "$docker_root" | awk 'NR == 2 {print $4}')
+          if (( available_kb < 50 * 1024 * 1024 )); then
+            echo "Less than 50 GiB available for Docker and build outputs" >&2
+            exit 1
+          fi
       - name: Checkout
         uses: actions/checkout@v2
       - name: Download Caches
@@ -103,18 +118,25 @@ jobs:
     if: ${{ false }} # skip for now
     name: Code Checker rockylinux9
     # Run in rockylinux docker
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 180
     steps:
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        if: ${{ ! startsWith(runner.name, 'self') }} # skip this step if it is self-hosted runner
-        with:
-          root-reserve-mb: 20480
-          swap-size-mb: 1024
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
+      - name: Prepare shared Docker and build storage
+        if: ${{ ! startsWith(runner.name, 'self') }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Keep the workspace and Docker on the same filesystem. The previous
+          # LVM setup filled / with loop images, leaving Docker unable to pull.
+          sudo apt-get clean
+          docker image prune --all --force
+          docker_root=$(docker info --format '{{.DockerRootDir}}')
+          df -h / "$GITHUB_WORKSPACE" "$docker_root"
+          available_kb=$(df -Pk "$docker_root" | awk 'NR == 2 {print $4}')
+          if (( available_kb < 50 * 1024 * 1024 )); then
+            echo "Less than 50 GiB available for Docker and build outputs" >&2
+            exit 1
+          fi
       - name: Checkout
         uses: actions/checkout@v2
       - name: Download Caches
