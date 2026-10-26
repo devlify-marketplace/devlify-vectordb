@@ -79,4 +79,4 @@ Besides All the reviewer's responsibility listed above, Approvers should also ma
 
 - The variable names appearing in the source code need to be readable. Comments are necessary if it is an unusual abbreviations
 
-Thanks for [Code Review Guide](https://github.com/pingcap/tidb/blob/master/code_review_guide.md) from Pingcap community.
+Thanks for [Code Review Guide](https://raw.githubusercontent.com/pingcap/tidb/master/code_review_guide.md) from Pingcap community.

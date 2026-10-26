@@ -13,7 +13,7 @@ Jaeger, inspired by [Dapper](https://research.google.com/pubs/pub36356.html) and
 See also:
 
 - Jaeger [documentation](https://jaegertracing.io/docs/) for getting started, operational details, and other information.
-- Blog post [Evolving Distributed Tracing at Uber](https://eng.uber.com/distributed-tracing/).
+- Blog post [Evolving Distributed Tracing at Uber](https://www.uber.com/us/en/blog/distributed-tracing/).
 - Tutorial / walkthrough [Take OpenTracing for a HotROD ride](https://medium.com/@YuriShkuro/take-opentracing-for-a-hotrod-ride-f6e3141f7941).
 
 We mainly use jaeger as an implementation of opentracing.

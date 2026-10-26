@@ -271,4 +271,4 @@ credential:
 
 - Milvus embedding provider architecture: `internal/util/function/embedding`
 - Milvus provider config path: `pkg/util/paramtable/function_param.go`
-- Yandex text embedding API docs: https://yandex.cloud/ru/docs/ai-studio/embeddings/api-ref/Embeddings/textEmbedding
+- Yandex text embedding API docs: https://aistudio.yandex.ru/docs/ru/ai-studio/embeddings/api-ref/Embeddings/textEmbedding

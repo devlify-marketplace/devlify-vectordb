@@ -14,7 +14,7 @@
 
 Milvus 是一款全球领先的开源向量数据库，赋能 AI 应用和向量相似度搜索，加速非结构化数据检索。用户在任何部署环境中均可获得始终如一的用户体验。
 
-Milvus 2.0 是一款云原生向量数据库，采用存储与计算分离的架构设计。该重构版本的所有组件均为无状态组件，极大地增强了系统弹性和灵活性。更多系统架构细节，参考 [Milvus 系统架构](https://milvus.io/cn/docs/architecture_overview.md)。
+Milvus 2.0 是一款云原生向量数据库，采用存储与计算分离的架构设计。该重构版本的所有组件均为无状态组件，极大地增强了系统弹性和灵活性。更多系统架构细节，参考 [Milvus 系统架构](https://milvus.io/docs/architecture_overview.md)。
 
 Milvus 基于 [Apache 2.0 License](https://github.com/milvus-io/milvus/blob/master/LICENSE) 协议发布，于 2019 年 10 月正式开源，是 [LF AI & Data 基金会](https://lfaidata.foundation/) 的毕业项目。
 
@@ -44,7 +44,7 @@ Milvus 基于 [Apache 2.0 License](https://github.com/milvus-io/milvus/blob/mast
   <summary><b>混合查询</b></summary>
   Milvus 2.4 引入了多向量支持和混合查询框架，用户可以将多个向量字段（最多 10 个）导入到单个 Collection 中。这些来自不同的嵌入模型或经过不同的处理方法处理的向量分别代表了不同的数据特征。混合搜索的结果使用 reranking 策略对各向量列的结果进行融合，如 Reciprocal Rank Fusion (RRF) 和 Weighted Scoring。
 
-  该特性尤其适用于综合搜索场景，如基于多种属性（如照片、声音、指纹等）识别向量库中最相似的人。有关更多信息，请参阅 [混合搜索](https://milvus.io/cn/docs/multi-vector-search.md)。
+  该特性尤其适用于综合搜索场景，如基于多种属性（如照片、声音、指纹等）识别向量库中最相似的人。有关更多信息，请参阅 [混合搜索](https://milvus.io/docs/multi-vector-search.md)。
   </details>
 
 <details>
@@ -61,9 +61,9 @@ Milvus 基于 [Apache 2.0 License](https://github.com/milvus-io/milvus/blob/mast
 
 ### 启动 Milvus
 
-- [安装 Milvus 单机版](https://milvus.io/cn/docs/v2.0.0/install_standalone-docker.md)
+- [安装 Milvus 单机版](https://milvus.io/docs/install_standalone-docker.md)
 
-- [安装 Milvus 分布式版本](https://milvus.io/cn/docs/v2.0.0/install_cluster-docker.md)
+- [安装 Milvus 分布式版本](https://milvus.io/docs/install_cluster-helm.md)
 
 ### 源码编译 Milvus
 
@@ -111,7 +111,7 @@ $ make milvus
 | [使用 Milvus 进行图像搜索](https://milvus.io/docs/image_similarity_search.md) | 语义搜索 | 向量搜索, 动态字段 |
 | [使用 Milvus 进行混合搜索](https://milvus.io/docs/hybrid_search_with_milvus.md) | 混合搜索 | 混合搜索, 多向量, 密集嵌入, 稀疏嵌入 |
 | [使用多向量实现多模态搜索](https://milvus.io/docs/multimodal_rag_with_milvus.md) | 语义搜索 | 多向量, 混合搜索 |
-| [问答系统](https://milvus.io/docs/question_answering_system.md) | 问答系统 | 向量搜索 |
+| [使用 Milvus 构建 RAG 问答系统](https://milvus.io/docs/build-rag-with-milvus.md) | 问答系统 | 向量搜索 |
 | [推荐系统](https://milvus.io/docs/recommendation_system.md) | 推荐系统 | 向量搜索 |
 | [视频相似性搜索](https://milvus.io/docs/video_similarity_search.md) | 语义搜索 | 向量搜索 |
 | [音频相似性搜索](https://milvus.io/docs/audio_similarity_search.md) | 语义搜索 | 向量搜索 |
@@ -122,7 +122,7 @@ $ make milvus
 | [使用 Milvus 构建图形 RAG](https://milvus.io/docs/graph_rag_with_milvus.md) | RAG | 图搜索 |
 | [使用 Milvus 进行上下文检索](https://milvus.io/docs/contextual_retrieval_with_milvus.md) | 快速入门 | 向量搜索 |
 | [使用 Milvus 进行 HDBSCAN 聚类](https://milvus.io/docs/hdbscan_clustering_with_milvus.md) | 快速入门 | 向量搜索 |
-| [使用 ColPali 实现多模态检索](https://milvus.io/docs/use_ColPali_with_milvus.md) | 快速入门 | 向量搜索 |
+| [使用 ColPali 实现多模态检索](https://milvus.io/docs/search-with-embedding-lists.md) | 快速入门 | 向量搜索 |
 | [向量可视化](https://milvus.io/docs/vector_visualization.md) | 快速入门 | 向量搜索 |
 | [基于 Milvus 的电影推荐](https://milvus.io/docs/movie_recommendation_with_milvus.md) | 推荐系统 | 向量搜索 |
 | [使用 Matryoshka 嵌入进行漏斗搜索](https://milvus.io/docs/funnel_search_with_matryoshka.md) | 快速入门 | 向量搜索 |
@@ -620,7 +620,7 @@ Milvus [训练营](https://github.com/milvus-io/bootcamp)能够帮助你了解�
 
 ## Milvus 文档
 
-获取更多有关安装、开发、部署和管理的指南，请查看 [Milvus 文档](https://milvus.io/cn/docs).
+获取更多有关安装、开发、部署和管理的指南，请查看 [Milvus 文档](https://milvus.io/docs).
 
 ### SDK
 
@@ -637,7 +637,7 @@ Attu 提供了好用的图形化界面，帮助您更好的管理数据和Milvus
 
 ## 社区
 
-欢迎加入 [Slack](https://milvusio.slack.com/join/shared_invite/zt-1slimkif6-8uWK0XPL8adve6vSD4jSwg) 频道分享你的建议与问题。你也可以通过 [FAQ](https://milvus.io/cn/docs/performance_faq.md) 页面，查看常见问题及解答。
+欢迎加入 [Slack](https://milvus.io/slack) 频道分享你的建议与问题。你也可以通过 [FAQ](https://milvus.io/docs/performance_faq.md) 页面，查看常见问题及解答。
 
 订阅 Milvus 邮件：
 
@@ -648,8 +648,8 @@ Attu 提供了好用的图形化界面，帮助您更好的管理数据和Milvus
 关注 Milvus 社交媒体：
 
 - [知乎](https://www.zhihu.com/org/zilliz-11)
-- [CSDN](http://zilliz.blog.csdn.net/)
-- [Bilibili](http://space.bilibili.com/478166626)
+- [CSDN](https://zilliz.blog.csdn.net/)
+- [Bilibili](https://space.bilibili.com/478166626)
 - [Medium](https://medium.com/@milvusio)
 - [Twitter](https://twitter.com/milvusio)
 - [Youtube](https://www.youtube.com/channel/UCMCo_F7pKjMHBlfyxwOPw-g)

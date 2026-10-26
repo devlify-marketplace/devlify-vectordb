@@ -84,7 +84,7 @@ For each incoming token from the upstream tokenizer:
 
 ### Dependency
 
-The filter uses the [`pinyin`](https://crates.io/crates/pinyin) Rust crate (version 0.10) for Chinese-to-Pinyin conversion. This crate provides accurate conversion including tone-less plain Pinyin and first-letter extraction.
+The filter uses the [`pinyin`](https://docs.rs/pinyin/0.10.0) Rust crate (version 0.10) for Chinese-to-Pinyin conversion. This crate provides accurate conversion including tone-less plain Pinyin and first-letter extraction.
 
 ### Filter Registration
 
@@ -131,5 +131,5 @@ Integration/E2E tests should cover:
 
 ## References
 
-- [`pinyin` Rust crate](https://crates.io/crates/pinyin) — Chinese-to-Pinyin conversion library
+- [`pinyin` Rust crate](https://docs.rs/pinyin/0.10.0) — Chinese-to-Pinyin conversion library
 - Tantivy tokenizer pipeline: `internal/core/thirdparty/tantivy/tantivy-binding/src/analyzer/`

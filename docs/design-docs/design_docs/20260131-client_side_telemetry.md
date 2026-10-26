@@ -730,5 +730,5 @@ Server polls clients for metrics.
 - Server implementation: `internal/rootcoord/telemetry/`
 - Proxy HTTP layer: `internal/proxy/telemetry_http_handler.go`, `telemetry_models.go`
 - Go SDK client: `client/milvusclient/telemetry.go`
-- gRPC health checking: https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+- gRPC health checking: https://raw.githubusercontent.com/grpc/grpc/master/doc/health-checking.md
 - OpenTelemetry SDK patterns: https://opentelemetry.io/docs/instrumentation/go/

@@ -221,7 +221,7 @@ For brute-force (no index) execution, a Volnitsky substring searcher pre-filters
 3. For each row: if `VolnitskySearcher::contains(row)` returns false, skip RE2 entirely.
 4. Only rows passing the Volnitsky pre-filter are verified with `RE2::PartialMatch`.
 
-The `VolnitskySearcher` implements the [Volnitsky algorithm](http://volnitsky.com/project/str_search/):
+The `VolnitskySearcher` implements the [Volnitsky algorithm](../../../internal/core/src/common/Volnitsky.h):
 - 64KB bigram hash table (fits L2 cache) with open-addressing linear probing.
 - O(n/m) average-case for needles ≥ 4 bytes (bigram skip distance).
 - SSE2 `memchr`-based fallback for short needles (< 4 bytes).
@@ -543,4 +543,4 @@ The following edge cases were tested against ClickHouse's documented behavior an
 - [RE2 Safety Guarantees](https://swtch.com/~rsc/regexp/regexp1.html) — linear-time matching, no catastrophic backtracking
 - [Google Code Search](https://swtch.com/~rsc/regexp/regexp4.html) — trigram index for regex acceleration (same approach as our ngram optimization)
 - [PostgreSQL Pattern Matching](https://www.postgresql.org/docs/current/functions-matching.html) — `~` operator with substring semantics
-- [Volnitsky Algorithm](http://volnitsky.com/project/str_search/) — O(n/m) substring search with bigram hash table
+- [Volnitsky Algorithm](../../../internal/core/src/common/Volnitsky.h) — O(n/m) substring search with bigram hash table

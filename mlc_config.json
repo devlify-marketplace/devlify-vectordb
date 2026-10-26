@@ -1,0 +1,28 @@
+{
+  "ignorePatterns": [
+    {
+      "pattern": "^https://milvus\\.io/docs/(?:architecture_overview|audio_similarity_search|boolean|build-rag-with-milvus|contextual_retrieval_with_milvus|dna_sequence_classification|funnel_search_with_matryoshka|graph_rag_with_milvus|grouping-search|hdbscan_clustering_with_milvus|hybrid_search_with_milvus|image_deduplication_system|image_similarity_search|index-explained|install_cluster-helm|install_standalone-docker|metric|movie_recommendation_with_milvus|multi-vector-search|multimodal_rag_with_milvus|performance_faq|recommendation_system|search-with-embedding-lists|text_image_search|text_search_engine|tutorials-overview|vector_visualization|video_similarity_search)\\.md$"
+    },
+    {
+      "pattern": "^https://milvus\\.io/docs/?$"
+    },
+    {
+      "pattern": "^https://milvus\\.io/?$"
+    },
+    {
+      "pattern": "^https://milvus\\.io/slack/?$"
+    },
+    {
+      "pattern": "^https://aistudio\\.yandex\\.ru/docs/ru/ai-studio/embeddings/api-ref/Embeddings/textEmbedding(?:\\?.*)?$"
+    },
+    {
+      "pattern": "^https://www\\.zhihu\\.com/org/zilliz-11/?$"
+    },
+    {
+      "pattern": "^https://zilliz\\.blog\\.csdn\\.net/?$"
+    },
+    {
+      "pattern": "^https://space\\.bilibili\\.com/478166626/?$"
+    }
+  ]
+}
