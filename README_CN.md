@@ -178,7 +178,7 @@ Milvus [训练营](https://github.com/milvus-io/bootcamp)能够帮助你了解�
 
 ## 贡献代码
 
-欢迎向 Milvus 社区贡献你的代码。代码贡献流程或提交补丁等相关信息详见 [代码贡献准则](https://github.com/milvus-io/milvus/blob/master/CONTRIBUTING.md)。参考 [社区仓库](https://github.com/milvus-io/community) 了解社区管理准则并获取更多社区资源。
+欢迎向 Milvus 社区贡献你的代码。代码贡献流程或提交补丁等相关信息详见 [代码贡献准则](https://raw.githubusercontent.com/milvus-io/milvus/master/CONTRIBUTING.md)。参考 [社区仓库](https://github.com/milvus-io/community) 了解社区管理准则并获取更多社区资源。
 
 ### All contributors
 
